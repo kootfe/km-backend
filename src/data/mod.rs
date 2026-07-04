@@ -8,6 +8,7 @@ pub struct KfResponse<T> {
     pub success: bool,
     pub error: Option<String>,
     pub data: Option<T>,
+    pub err_code: Option<i32>,
 }
 
 impl<T> KfResponse<T> {
@@ -16,9 +17,9 @@ impl<T> KfResponse<T> {
             success: true,
             error: None,
             data: Some(data),
+            err_code: None
         }
     }
-
 }
 
 impl KfResponse<()> {
@@ -27,6 +28,16 @@ impl KfResponse<()> {
             success: false,
             error: Some(msg.into()),
             data: None,
+            err_code: None
+        }
+    }
+
+    pub fn err_c(code: i32, msg: impl Into<String>) -> Self {
+        KfResponse {
+            success: false,
+            error: Some(msg.into()),
+            data: None,
+            err_code: Some(code)
         }
     }
 
@@ -35,6 +46,7 @@ impl KfResponse<()> {
             success: true,
             error: None,
             data: None,
+            err_code: None
         }
     }
 }
@@ -43,4 +55,5 @@ impl KfResponse<()> {
 pub struct User {
     pub id: uuid::Uuid,
     pub username: String,
+    pub createdat: chrono::DateTime<chrono::Utc>, 
 }

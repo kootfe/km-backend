@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse, Responder, get, post, web};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 

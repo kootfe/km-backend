@@ -3,7 +3,7 @@ CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(50) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE char_sheet_templates (
@@ -13,7 +13,7 @@ CREATE TABLE char_sheet_templates (
     description TEXT,
     schema JSONB NOT NULL,
     is_public BOOLEAN DEFAULT FALSE not null,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE characters (
@@ -23,5 +23,5 @@ CREATE TABLE characters (
     name VARCHAR(100) NOT NULL,
     data JSONB NOT NULL,
     is_public BOOLEAN DEFAULT FALSE not null,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );

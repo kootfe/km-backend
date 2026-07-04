@@ -14,7 +14,7 @@ pub fn get_token_from_req<'a>(req: &'a HttpRequest) -> Option<&'a str> {
 
 pub async fn get_user_from_uuid(uuid: &str, poll: &PgPool) -> Option<User> {
     let user = sqlx::query!(
-        "select username, id from users where id = $1",
+        "select username, id, created_at from users where id = $1",
         Uuid::parse_str(uuid).unwrap() // bug 101 lol
                                        /*
                                         * this will 100% explode
@@ -33,6 +33,7 @@ pub async fn get_user_from_uuid(uuid: &str, poll: &PgPool) -> Option<User> {
         Ok(Some(u)) => Some(User {
             username: u.username,
             id: u.id,
+            createdat: u.created_at.unwrap(),
         }),
         Ok(None) => None,
         Err(_) => None,

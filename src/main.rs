@@ -20,11 +20,9 @@ async fn root() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
-    let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
-    let secret = env::var("JWT_SECRET")
-        .expect("JWT_SECRET must be set");
+    let secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
 
     let pool = PgPool::connect(&database_url)
         .await
@@ -34,14 +32,27 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
+            .wrap(
+                actix_cors::Cors::default() // CORS
+                    .allow_any_origin()
+                    .allow_any_method()
+                    .allow_any_header(),
+            )
             .app_data(web::Data::new(pool.clone()))
             .app_data(web::Data::new(app_state.clone()))
-            .service(root).service(
-            web::scope("/auth")
-                .service(auth::register)
-                .service(auth::login)
-                .service(auth::me)
-        )
+            .service(root)
+            .service(
+                web::scope("/auth")
+                    .service(auth::register)
+                    .service(auth::login)
+                    .service(auth::me),
+            )
+            .service(
+                web::scope("/sheet")
+                    .service(sheet::create_template)
+                    .service(sheet::list_templates)
+                    .service(sheet::get_template),
+            )
     })
     .bind(("127.0.0.1", 8080))?
     .run()
