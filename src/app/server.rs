@@ -1,7 +1,7 @@
 use actix_files::Files;
 use actix_web::{App, HttpServer, web};
 
-use crate::{app::KM, routes::main_routes::{index, login, register, register_post}};
+use crate::{app::KM, routes::main_routes::{index, login, login_post, register, register_post}};
 
 pub async fn server(km: KM) -> Result<(), std::io::Error> {
     HttpServer::new(move || {
@@ -10,6 +10,7 @@ pub async fn server(km: KM) -> Result<(), std::io::Error> {
             .service(index)
             .service(register)
             .service(register_post)
+            .service(login_post)
             .service(login)
             .service(Files::new("/css", "./public/css"))
             .service(Files::new("/js", "./public/js"))

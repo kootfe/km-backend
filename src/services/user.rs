@@ -1,11 +1,11 @@
 use crate::{
     app::KM,
     data::{
-        form::RegisterForm,
-        user::{User, hash_password},
+        form::{LoginForm, RegisterForm},
+        user::{User, check_hash, hash_password},
     },
-    db::users::{get_user_by_name, insert_user},
-    http::response::ApiErrorE,
+    db::users::{get_auth_user_by_name, get_user_by_name, insert_user},
+    http::{jwt, response::ApiErrorE},
 };
 use thiserror::Error;
 use tracing::{info, warn, instrument};
@@ -20,6 +20,8 @@ pub enum UserServiceError {
 
     #[error("password hashing failed")]
     HashFail,
+    #[error("Internal")]
+    Internal,
 
     #[error("Db error: {0}")]
     Db(#[from] anyhow::Error),
@@ -30,7 +32,7 @@ impl From<UserServiceError> for ApiErrorE {
         match e {
             UserServiceError::DuplicateUsername => ApiErrorE::DuplicateUsername,
             UserServiceError::WrongLogin => ApiErrorE::WrongLogin,
-            UserServiceError::HashFail | UserServiceError::Db(_) => ApiErrorE::Internal,
+            UserServiceError::HashFail | UserServiceError::Db(_) | UserServiceError::Internal => ApiErrorE::Internal,
         }
     }
 }
@@ -51,4 +53,15 @@ pub async fn register_user(km: &KM, form: RegisterForm) -> Result<User, UserServ
     info!(user_id = %user.id, "user registered.");
 
     Ok(user)
+}
+
+#[instrument(skip(km, form), fields(username = %form.username))]
+pub async fn login_user(km: &KM, form: LoginForm) -> Result<String, UserServiceError> {
+    let user = get_auth_user_by_name(km.pool(), &form.username).await.map_err(|_| UserServiceError::WrongLogin)?;
+    if !check_hash(&form.password, &user) {
+        return Err(UserServiceError::WrongLogin);
+    };
+    let token = jwt::JwtToken::new(user.id, km.jwt_secret(), user.jwt_v, 20000).map_err(|_| UserServiceError::Internal)?;
+    info!(user_name = %user.username, "User logged in");
+    Ok(token)
 }
