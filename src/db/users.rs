@@ -1,5 +1,5 @@
 use anyhow::Result;
-use sqlx::PgPool;
+use sqlx::{PgPool, pool};
 use uuid::Uuid;
 
 use crate::data::user::{User, UserAuth};
@@ -52,6 +52,30 @@ pub async fn insert_user(pool: &PgPool, name: &str, hash: &str) -> Result<User> 
         id,
         name,
         hash
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(user)
+}
+
+pub async fn get_user_by_id(pool: &PgPool, id: Uuid) -> Result<User> {
+    let user = sqlx::query_as!(
+        User,
+        "select id, username from users where id = $1",
+        id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(user)
+}
+
+pub async fn get_auth_user_by_id(pool: &PgPool, id: Uuid) -> Result<UserAuth> {
+    let user = sqlx::query_as!(
+        UserAuth,
+        "select id, username, pass_hash, jwt_v from users where id = $1",
+        id
     )
     .fetch_one(pool)
     .await?;

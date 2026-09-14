@@ -34,7 +34,7 @@ pub async fn login_post(form: web::Form<LoginForm>, km: web::Data<KM>) -> impl R
             let cookie = baker!(&km, "access_token", u, true);
             HttpResponse::SeeOther()
                 .cookie(cookie)
-                .append_header(("Location", "/me"))
+                .append_header(("Location", "/mere"))
                 .finish()
         }
         Err(e) => {

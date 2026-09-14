@@ -5,6 +5,7 @@ mod web_pages;
 mod data;
 mod http;
 mod services;
+mod middleware;
 
 use crate::{
     app::{KM, server::server, trace::set_trace},
